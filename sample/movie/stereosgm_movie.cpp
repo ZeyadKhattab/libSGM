@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		std::exit(EXIT_FAILURE);
 	}
 
-	const int first_frame = 1;
+	const int first_frame = 0;
 
 	cv::Mat I1 = cv::imread(format_string(argv[1], first_frame), -1);
 	cv::Mat I2 = cv::imread(format_string(argv[2], first_frame), -1);
@@ -88,46 +88,28 @@ int main(int argc, char* argv[])
 
 	device_buffer d_I1(input_bytes), d_I2(input_bytes), d_disparity(output_bytes);
 
-	for (int frame_no = first_frame;; frame_no++) {
+	for (int frame_no = first_frame;frame_no<200; frame_no++) {
 
 		I1 = cv::imread(format_string(argv[1], frame_no), -1);
 		I2 = cv::imread(format_string(argv[2], frame_no), -1);
-		if (I1.empty() || I2.empty()) {
+	/*	if (I1.empty() || I2.empty()) {
 			frame_no = first_frame;
 			continue;
-		}
+		}*/
 
 		cudaMemcpy(d_I1.data, I1.data, input_bytes, cudaMemcpyHostToDevice);
 		cudaMemcpy(d_I2.data, I2.data, input_bytes, cudaMemcpyHostToDevice);
 
-		const auto t1 = std::chrono::system_clock::now();
+		
 
 		sgm.execute(d_I1.data, d_I2.data, d_disparity.data);
-		cudaDeviceSynchronize();
+		
 
-		const auto t2 = std::chrono::system_clock::now();
-		const auto duration = std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count();
-		const double fps = 1e6 / duration;
+	
 
 		cudaMemcpy(disparity.data, d_disparity.data, output_bytes, cudaMemcpyDeviceToHost);
 
-		// draw results
-		if (I1.type() != CV_8U) {
-			cv::normalize(I1, I1, 0, 255, cv::NORM_MINMAX);
-			I1.convertTo(I1, CV_8U);
-		}
-
-		disparity.convertTo(disparity_8u, CV_8U, 255. / disp_size);
-		cv::applyColorMap(disparity_8u, disparity_color, cv::COLORMAP_JET);
-		disparity_color.setTo(cv::Scalar(0, 0, 0), disparity == invalid_disp);
-		cv::putText(disparity_color, format_string("sgm execution time: %4.1f[msec] %4.1f[FPS]", 1e-3 * duration, fps),
-			cv::Point(50, 50), 2, 0.75, cv::Scalar(255, 255, 255));
-
-		cv::imshow("left image", I1);
-		cv::imshow("disparity", disparity_color);
-		const char c = cv::waitKey(1);
-		if (c == 27) // ESC
-			break;
+		cv::imwrite(std::to_string(frame_no)+".png", disparity);
 	}
 
 	return 0;
