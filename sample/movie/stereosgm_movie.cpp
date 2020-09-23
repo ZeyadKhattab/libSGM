@@ -50,7 +50,12 @@ static std::string format_string(const char* fmt, Args... args)
 	std::snprintf(buf, BUF_SIZE, fmt, args...);
 	return std::string(buf);
 }
-
+std::string padNum(int x){
+	std::string ans=std::to_string(x);
+	while(ans.length()<6)
+	ans="0"+ans;
+	return ans;
+}
 int main(int argc, char* argv[])
 {
 	if (argc < 3) {
@@ -109,7 +114,7 @@ int main(int argc, char* argv[])
 
 		cudaMemcpy(disparity.data, d_disparity.data, output_bytes, cudaMemcpyDeviceToHost);
 
-		cv::imwrite(std::to_string(frame_no)+".png", disparity);
+		cv::imwrite("disp_0/"+padNum(frame_no)+"_10.png", disparity);
 	}
 
 	return 0;
