@@ -113,6 +113,13 @@ int main(int argc, char* argv[])
 	
 
 		cudaMemcpy(disparity.data, d_disparity.data, output_bytes, cudaMemcpyDeviceToHost);
+		disparity.setTo(0, disparity > (int32_t)49152);
+		disparity *= 256;
+
+
+
+
+
 
 		cv::imwrite("disp_0/"+padNum(frame_no)+"_10.png", disparity);
 	}

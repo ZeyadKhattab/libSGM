@@ -1,0 +1,1 @@
+./stereo_movie C:\Users\zeyad\Desktop\Thesis_Final\dataset\pgm\image_2\%06d_10.pgm C:\Users\zeyad\Desktop\Thesis_Final\dataset\pgm\image_3\%06d_10.pgm 256
